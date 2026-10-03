@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large datasets and raw micrographs (keep repository lightweight)
+data/raw/*.tif
+data/raw/*.tiff
+data/masks/*.tif
+data/masks/*.tiff
+data/patches/*.npy
+
+# Checkpoints (track best_model.pth via Git LFS or external link if >100MB; our file is ~8MB so small checkpoints can be kept or ignored)
+checkpoints/*.pt
+checkpoints/*.pth.tar
+
+# Output scratch files
+outputs/probability_maps/*.tif
+outputs/binary_masks/*.tif
+outputs/watershed_instances/*.tif

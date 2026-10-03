@@ -1,0 +1,21 @@
+# ==============================================================================
+# SEM Scale Calibration Metadata (Physical size per pixel)
+# ==============================================================================
+
+magnifications:
+  2000x:
+    nm_per_pixel: 49.60
+    um_per_pixel: 0.04960
+    description: "Macroscopic cluster and coarse particle distribution"
+  3000x:
+    nm_per_pixel: 33.07
+    um_per_pixel: 0.03307
+    description: "Primary distribution analysis scale"
+  5000x:
+    nm_per_pixel: 19.84
+    um_per_pixel: 0.01984
+    description: "Intermediate precipitate detail scale"
+  20000x:
+    nm_per_pixel: 4.96
+    um_per_pixel: 0.00496
+    description: "Nanometric fine secondary precipitates"

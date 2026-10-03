@@ -1,0 +1,55 @@
+# ==============================================================================
+# Model and Pipeline Configuration
+# Superalloy SEM Microstructure Segmentation & Area-Weighted PSD Analysis
+# ==============================================================================
+
+data:
+  raw_dir: "data/raw"
+  masks_dir: "data/masks"
+  patches_dir: "data/patches"
+  patch_size: 256
+  patch_stride: 256
+  min_particle_fraction: 0.005      # Filter patches with < 0.5% particles
+  val_split: 0.20                   # 20% validation split (image-level)
+  seed: 42
+
+model:
+  in_channels: 1
+  out_channels: 1
+  encoder_channels: [16, 32, 64, 128]
+  bottleneck_channels: 256
+  dropout_bottleneck: 0.3
+  dropout_decoder: 0.1
+
+training:
+  batch_size: 8
+  epochs: 80
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  lr_patience: 5
+  lr_factor: 0.5
+  early_stop_patience: 12
+  seed: 42
+  num_workers: 0
+
+loss:
+  bce_weight: 0.5
+  dice_weight: 0.5
+  aux_weight: 0.3
+  smooth: 1.0
+
+inference:
+  patch_size: 256
+  stride: 128                       # 50% overlap sliding window
+  threshold: 0.50                   # Fixed binary probability cutoff
+
+postprocess:
+  morph_element_size: 3             # 3x3 elliptical structuring element
+  min_particle_size_px: 3           # Remove regions < 3 px (readout noise)
+  gaussian_sigma: 0.8               # Smoothing for distance transform map
+  peak_min_distance: 4              # Minimum distance between watershed markers
+
+analysis:
+  psd_bin_width_nm: 25.0            # Uniform 25 nm bin width for area-weighted PSD
+  min_fit_ellipse_size_px: 10       # Minimum size for reliable aspect ratio fit
+  exclude_boundary_particles: true  # Exclude border particles from PSD/aspect ratio
