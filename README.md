@@ -49,7 +49,7 @@ Microstructure-SEM-image-Analysis/
 │   └── best_model.pth           # Pre-trained Residual Attention U-Net weights
 ├── figures/
 │   ├── unet_architecture.png    # High-resolution 300 DPI architecture diagram
-│   └── unet_architecture.pdf    # Vector format for publication
+│   └── unet_architecture.pdf    # Vector PDF format
 ├── src/
 │   ├── data/                    # Banner inpainting, patch cropping, augmentations, Dataset
 │   ├── models/                  # ResConvBlock, AttentionGate, ResidualAttentionUNet
@@ -110,7 +110,7 @@ Compute equivalent circular diameter ($d_{\text{eq}}$), Delesse area fraction ($
 ```bash
 python scripts/05_analyze_microstructure.py --instances outputs/watershed_instances/ --mag 3000x
 ```
-Saves CSV summary tables and dual-axis publication figures to `outputs/psd_results/`.
+Saves CSV summary tables and dual-axis PSD plots to `outputs/psd_results/`.
 
 ---
 

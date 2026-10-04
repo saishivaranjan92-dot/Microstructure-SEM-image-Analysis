@@ -1,6 +1,6 @@
 """
 Step 5: Quantitative Microstructural Analysis and Area-Weighted PSD Plotter
-Generates particle size statistics, area fractions, and publication-ready dual-axis PSD plots.
+Generates particle size statistics, area fractions, and dual-axis PSD plots.
 """
 
 import argparse
@@ -98,7 +98,7 @@ def main():
     valid_areas = np.array([p["area_um2"] for p in all_particles if not (exclude_borders and p["touches_border"])])
     gmm_results = fit_two_component_gmm(valid_diams, weights=valid_areas)
 
-    # Plot Publication Dual-Axis Figure
+    # Plot Dual-Axis Figure
     fig, ax1 = plt.subplots(figsize=(7.5, 5.0), dpi=300)
 
     bin_centers = psd_df["bin_center_nm"].values
@@ -130,7 +130,7 @@ def main():
     plot_path = out_dir / f"psd_{args.mag}_plot.png"
     plt.savefig(plot_path, dpi=300)
     plt.close()
-    print(f"Generated publication PSD plot: {plot_path}")
+    print(f"Generated PSD plot: {plot_path}")
 
 if __name__ == "__main__":
     main()
