@@ -47,13 +47,13 @@ class ResidualAttentionUNet(nn.Module):
 
         # --- Expanding Decoder ---
         self.upconvs = nn.ModuleList()
-        self.attention_gates = nn.ModuleList()
+        self.att_gates = nn.ModuleList()
         self.decoders = nn.ModuleList()
 
         curr_ch = bottleneck_channels
         for ch in self.decoder_channels:
             self.upconvs.append(nn.ConvTranspose2d(curr_ch, ch, kernel_size=2, stride=2))
-            self.attention_gates.append(AttentionGate(g_channels=ch, x_channels=ch, inter_channels=max(1, ch // 2)))
+            self.att_gates.append(AttentionGate(g_channels=ch, x_channels=ch, inter_channels=max(1, ch // 2)))
             self.decoders.append(ResConvBlock(ch * 2, ch, dropout=dropout_decoder))
             curr_ch = ch
 
@@ -62,8 +62,8 @@ class ResidualAttentionUNet(nn.Module):
 
         # --- Deep Supervision Heads (tapped from intermediate decoder stages) ---
         # Level 1 (64 channels) and Level 2 (32 channels)
-        self.aux_head_1 = nn.Conv2d(self.decoder_channels[1], out_channels, kernel_size=1)
-        self.aux_head_2 = nn.Conv2d(self.decoder_channels[2], out_channels, kernel_size=1)
+        self.aux_out_1 = nn.Conv2d(self.decoder_channels[1], out_channels, kernel_size=1)
+        self.aux_out_2 = nn.Conv2d(self.decoder_channels[2], out_channels, kernel_size=1)
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor, List[torch.Tensor]]]:
         # Contracting path
@@ -81,7 +81,7 @@ class ResidualAttentionUNet(nn.Module):
         skips = list(reversed(skips))
         aux_outputs = []
 
-        for idx, (up, att, dec) in enumerate(zip(self.upconvs, self.attention_gates, self.decoders)):
+        for idx, (up, att, dec) in enumerate(zip(self.upconvs, self.att_gates, self.decoders)):
             out = up(out)
 
             # Align spatial shape if needed
@@ -94,9 +94,9 @@ class ResidualAttentionUNet(nn.Module):
 
             # Deep supervision output taps
             if idx == 1:
-                aux_outputs.append(self.aux_head_1(out))
+                aux_outputs.append(self.aux_out_1(out))
             elif idx == 2:
-                aux_outputs.append(self.aux_head_2(out))
+                aux_outputs.append(self.aux_out_2(out))
 
         main_logits = self.out_conv(out)
 
