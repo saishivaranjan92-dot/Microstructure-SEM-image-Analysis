@@ -41,7 +41,7 @@ Evaluated across full-frame SEM micrographs at 50% sliding-window overlap:
 ## 🗂️ Repository Structure
 
 ```text
-SEM-Microstructure-UNet-PSD/
+Microstructure-SEM-image-Analysis/
 ├── configs/
 │   ├── config.yaml              # Hyperparameters, loss weights, and pipeline settings
 │   └── calibration.yaml         # Physical scale calibration (nm/pixel) by magnification
@@ -75,8 +75,8 @@ SEM-Microstructure-UNet-PSD/
 ### 1. Installation
 Clone the repository and install required packages:
 ```bash
-git clone https://github.com/saishivaranjan92-dot/SEM-Microstructure-UNet-PSD.git
-cd SEM-Microstructure-UNet-PSD
+git clone https://github.com/saishivaranjan92-dot/Microstructure-SEM-image-Analysis.git
+cd Microstructure-SEM-image-Analysis
 pip install -r requirements.txt
 ```
 
