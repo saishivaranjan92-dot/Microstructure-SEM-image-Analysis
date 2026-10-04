@@ -1,6 +1,5 @@
 """
-Step 2: Training Script for Residual Attention U-Net
-Trains model using AdamW, ReduceLROnPlateau, and Combined Loss with Deep Supervision.
+Train the Residual Attention U-Net model on extracted patches.
 """
 
 import argparse

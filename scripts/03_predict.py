@@ -1,6 +1,5 @@
 """
-Step 3: Sliding-Window Inference Script
-Executes full-frame particle segmentation with 50% window overlap.
+Run particle segmentation on full SEM images using sliding-window inference.
 """
 
 import argparse

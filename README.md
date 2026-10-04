@@ -1,140 +1,138 @@
-# Superalloy SEM Microstructure Segmentation & Area-Weighted PSD Analysis
+# SEM Microstructure Segmentation and Particle Size Analysis
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A deep learning and stereological characterization pipeline for secondary phase precipitate particles in scanning electron microscopy (SEM) micrographs of metallic superalloys. 
-
-The framework combines a customized **Residual Attention U-Net** with deep supervision, **marker-controlled watershed** instance separation, and stereologically calibrated **area-weighted Particle Size Distribution (PSD)** modeling.
+This project segments precipitate particles in Scanning Electron Microscopy (SEM) images and measures their size distribution. It uses a Residual Attention U-Net to segment particles, marker-controlled watershed to split touching particles, and calculates area-weighted particle size distributions (PSD).
 
 ---
 
-## 📌 Architecture Overview
+## Architecture
 
 ![Residual Attention U-Net Architecture](figures/unet_architecture.png)
 
-### Key Network Characteristics
-* **Contracting Encoder:** 4 resolution stages (16 to 128 channels) with $2 \times 2$ max pooling.
-* **Residual Convolutions (ResConvBlock):** Dual $3 \times 3$ convolutions with Batch Normalization, ReLU, and identity/$1\times 1$ projection shortcuts to ensure healthy gradient propagation.
-* **Additive Attention Gates (AGs):** Conditioned on coarse decoder features to filter out matrix background noise and imaging scratches along skip pathways prior to concatenation.
-* **Deep Supervision:** Intermediate auxiliary prediction heads tapped at decoder levels 2 and 3, driving early semantic alignment.
-* **Compact Model Size:** 2,053,283 trainable parameters (optimized for rapid CPU/GPU inference without overfitting small microscopy sets).
+The network is a U-Net with attention gates and residual blocks:
+* **Encoder:** 4 downsampling stages (16, 32, 64, 128 channels) with $2 \times 2$ max pooling.
+* **Residual Blocks:** Each block has two $3 \times 3$ convolutions with Batch Normalization, ReLU, and a skip connection.
+* **Attention Gates:** Placed on skip connections to reduce background noise from scratches and matrix contrast.
+* **Deep Supervision:** Auxiliary outputs at intermediate decoder levels to help training converge.
+* **Parameters:** ~2.06 million trainable parameters.
 
 ---
 
-## 📊 Benchmark Validation Results
+## Validation Results
 
-Evaluated across full-frame SEM micrographs at 50% sliding-window overlap:
+Evaluated on 23 validation images with 50% sliding-window overlap:
 
-| Metric | Validation Score | Description |
+| Metric | Score | Notes |
 | :--- | :---: | :--- |
-| **Dice Coefficient** | **$0.842 \pm 0.071$** | Peak validation Dice: $0.8756$ (Epoch 24) |
-| **IoU (Jaccard Index)** | **$0.733 \pm 0.088$** | Peak validation IoU: $0.7835$ |
-| **Precision** | **$0.864 \pm 0.065$** | Low false positive detection rate on matrix |
-| **Recall** | **$0.822 \pm 0.078$** | High true positive sensitivity on precipitates |
-| **Pixel Accuracy** | **$97.1 \pm 1.2\%$** | Overall classification accuracy |
-| **Predicted Area Fraction ($A_A$)** | **$10.97 \pm 2.8\%$** | Matches Ground Truth ($11.73 \pm 3.1\%$, Delesse principle) |
+| **Dice Coefficient** | **0.842 ± 0.071** | Peak: 0.8756 |
+| **IoU (Jaccard Index)** | **0.733 ± 0.088** | Peak: 0.7835 |
+| **Precision** | **0.864 ± 0.065** | Correctly identified particle pixels |
+| **Recall** | **0.822 ± 0.078** | Fraction of reference particles detected |
+| **Pixel Accuracy** | **97.1 ± 1.2%** | Overall pixel classification accuracy |
+| **Predicted Area Fraction** | **10.97 ± 2.8%** | Reference area fraction: 11.73 ± 3.1% |
 
 ---
 
-## 🗂️ Repository Structure
+## Repository Structure
 
 ```text
 Microstructure-SEM-image-Analysis/
 ├── configs/
-│   ├── config.yaml              # Hyperparameters, loss weights, and pipeline settings
-│   └── calibration.yaml         # Physical scale calibration (nm/pixel) by magnification
+│   ├── config.yaml              # Training, loss, and watershed settings
+│   └── calibration.yaml         # Scale calibration (nm/pixel) by magnification
 ├── checkpoints/
-│   └── best_model.pth           # Pre-trained Residual Attention U-Net weights
+│   └── best_model.pth           # Trained model weights
 ├── figures/
-│   ├── unet_architecture.png    # High-resolution 300 DPI architecture diagram
-│   └── unet_architecture.pdf    # Vector PDF format
+│   ├── unet_architecture.png    # Architecture diagram (PNG)
+│   └── unet_architecture.pdf    # Architecture diagram (PDF)
 ├── src/
-│   ├── data/                    # Banner inpainting, patch cropping, augmentations, Dataset
-│   ├── models/                  # ResConvBlock, AttentionGate, ResidualAttentionUNet
-│   ├── losses/                  # Soft Dice, Combined loss, segmentation metrics
-│   ├── engine/                  # Training loop (AdamW + ReduceLROnPlateau) & sliding window
-│   ├── postprocess/             # Morphological cleaning & marker-controlled watershed
-│   └── analysis/                # Sizing (d_eq), area fraction (A_A), 25 nm PSD, GMM fit
+│   ├── data/                    # Patch extraction, inpainting, and dataset loaders
+│   ├── models/                  # U-Net, residual blocks, and attention gates
+│   ├── losses/                  # Dice loss, BCE loss, and metrics
+│   ├── engine/                  # Training loop and sliding-window inference
+│   ├── postprocess/             # Morphological cleaning and watershed splitting
+│   └── analysis/                # Particle sizing, area fraction, and PSD calculation
 ├── scripts/
-│   ├── 01_prepare_data.py       # Data preprocessing and patch generation
-│   ├── 02_train.py              # Model training routine
-│   ├── 03_predict.py            # Sliding-window inference on new micrographs
-│   ├── 04_run_watershed.py      # Instance separation for touching particles
-│   └── 05_analyze_microstructure.py # Sizing, area-weighted PSD, and dual-axis plots
-├── requirements.txt             # Environment dependencies
+│   ├── 01_prepare_data.py       # Extract patches from raw images
+│   ├── 02_train.py              # Train the model
+│   ├── 03_predict.py            # Run inference on full images
+│   ├── 04_run_watershed.py      # Split touching particles
+│   └── 05_analyze_microstructure.py # Sizing and area-weighted PSD plots
+├── requirements.txt             # Dependencies
 ├── LICENSE                      # MIT License
 └── README.md
 ```
 
 ---
 
-## 🚀 Quickstart Guide
+## How to Use
 
 ### 1. Installation
-Clone the repository and install required packages:
+Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/saishivaranjan92-dot/Microstructure-SEM-image-Analysis.git
 cd Microstructure-SEM-image-Analysis
 pip install -r requirements.txt
 ```
 
-### 2. Prepare Training Patches
-Place raw micrographs into `data/raw/` and corresponding masks into `data/masks/`:
+### 2. Prepare Data
+Put raw SEM images in `data/raw/` and masks in `data/masks/`:
 ```bash
 python scripts/01_prepare_data.py --config configs/config.yaml
 ```
 
 ### 3. Train the Model
-Train the Residual Attention U-Net:
 ```bash
 python scripts/02_train.py --config configs/config.yaml
 ```
 
-### 4. Run Sliding-Window Inference
-Segment full-frame micrographs using pre-trained or trained weights:
+### 4. Run Prediction
+Run sliding-window inference on SEM images using the trained weights:
 ```bash
 python scripts/03_predict.py --input data/raw/ --weights checkpoints/best_model.pth
 ```
-Outputs continuous probability maps and binary masks ($P \ge 0.50$) to `outputs/`.
+This saves probability maps and binary masks (threshold 0.50) to `outputs/`.
 
-### 5. Separate Touching Particles (Watershed)
-Split clustered particle regions into individual instances:
+### 5. Split Touching Particles
+Separate touching particles using marker-controlled watershed:
 ```bash
 python scripts/04_run_watershed.py --input outputs/binary_masks/
 ```
 
-### 6. Metallurgical Sizing & Area-Weighted PSD
-Compute equivalent circular diameter ($d_{\text{eq}}$), Delesse area fraction ($A_A$), and 25 nm area-weighted PSD with bimodal Gaussian Mixture Model (GMM) fitting:
+### 6. Calculate Particle Sizes and PSD
+Calculate equivalent circular diameter ($d_{\text{eq}}$), area fraction, and 25 nm area-weighted PSD with Gaussian Mixture Model (GMM) fitting:
 ```bash
 python scripts/05_analyze_microstructure.py --instances outputs/watershed_instances/ --mag 3000x
 ```
-Saves CSV summary tables and dual-axis PSD plots to `outputs/psd_results/`.
+This outputs summary CSV files and PSD plots to `outputs/psd_results/`.
 
 ---
 
-## 🔬 Stereological Methodology
+## Particle Size Distribution (PSD) Details
 
-* **Area-Weighted Histogram Parameter:**
-  Rather than standard number frequency, the primary histogram metric is the area parameter $Y_k$:
-  $$Y_k = A_{\text{bin}, k} \times f_k = \sum_{i \in \text{bin } k} A_i \quad [\mu\text{m}^2]$$
-  This directly weights particles by their volume contribution to alloy precipitation strengthening.
-* **Boundary Particle Rule:**
-  Particles intersecting the micrograph edge are kept for the overall area fraction ($A_A = V_V$) calculation, but are excluded from size, shape, and distribution measurements to avoid bias from artificially truncated cross-sections.
+* **Area-Weighted Sizing:**
+  Rather than only counting particle numbers, each 25 nm size bin is weighted by total particle area:
+  $$Y_k = \sum_{i \in \text{bin } k} A_i \quad [\mu\text{m}^2]$$
+  This gives a clearer picture of how particles of different sizes contribute to the total precipitate volume.
 
----
-
-## 📜 Scale Calibration Constants
-
-| Magnification | Pixel Scale (nm/px) | Physical Field of View | Primary Purpose |
-| :---: | :---: | :---: | :--- |
-| **2,000×** | $49.60$ | $\sim 63.5 \times 47.6\,\mu\text{m}$ | Macroscopic clustering & coarse precipitates |
-| **3,000×** | $33.07$ | $\sim 42.3 \times 31.7\,\mu\text{m}$ | Representative area-weighted PSD baseline |
-| **5,000×** | $19.84$ | $\sim 25.4 \times 19.0\,\mu\text{m}$ | Intermediate precipitate details |
-| **20,000×** | $4.96$ | $\sim 6.35 \times 4.76\,\mu\text{m}$ | Nanometric secondary/tertiary phases |
+* **Edge Particles:**
+  Particles touching the image border are kept when measuring total area fraction, but excluded from size and shape distributions because they are cut off by the border.
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Pixel Scales
+
+| Magnification | Scale (nm/px) | Field of View |
+| :---: | :---: | :---: |
+| 2,000× | 49.60 | ~63.5 × 47.6 µm |
+| 3,000× | 33.07 | ~42.3 × 31.7 µm |
+| 5,000× | 19.84 | ~25.4 × 19.0 µm |
+| 20,000× | 4.96 | ~6.35 × 4.76 µm |
+
+---
+
+## License
+MIT License. See [LICENSE](LICENSE) for details.

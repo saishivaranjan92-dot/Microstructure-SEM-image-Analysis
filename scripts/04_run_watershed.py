@@ -1,6 +1,5 @@
 """
-Step 4: Marker-Controlled Watershed Script
-Cleans binary masks and separates touching particles into distinct labeled regions.
+Clean binary masks and split touching particles using watershed.
 """
 
 import argparse

@@ -1,6 +1,5 @@
 """
-Step 5: Quantitative Microstructural Analysis and Area-Weighted PSD Plotter
-Generates particle size statistics, area fractions, and dual-axis PSD plots.
+Measure particle sizes, calculate area fraction, and plot area-weighted PSD.
 """
 
 import argparse

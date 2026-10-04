@@ -1,6 +1,6 @@
 """
-Step 1: Data Preparation and Patch Extraction Script
-Inpaints microscope footer strip and extracts 256x256 training/validation patches.
+Extract 256x256 training patches from SEM images and masks.
+Removes the footer info strip with inpainting before saving patches.
 """
 
 import argparse
